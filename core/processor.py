@@ -2,7 +2,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 class EventProcessor:
     def __init__(self):
         self.processed = []
@@ -20,6 +19,7 @@ class EventProcessor:
             "status": "completed",
         }
         self.processed.append(result)
+        logger.info(f"Event processed: {result}")
         return result
 
     def get_count(self) -> int:
