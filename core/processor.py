@@ -3,9 +3,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 class EventProcessor:
-    def __init__(self, log_level=logging.INFO):  # ← змінили
+    def __init__(self, log_level=logging.INFO):
         self.processed = []
-        logging.basicConfig(                      # ← додали
+        logging.basicConfig(                     
             level=log_level,
             format="%(asctime)s [%(levelname)s] %(message)s"
         )
@@ -17,7 +17,7 @@ class EventProcessor:
         if event.get("id") is None:
             raise ValueError("Event must have an 'id' field")
 
-        logger.debug(f"Processing event: {event}")  # ← додали
+        logger.debug(f"Processing event: {event}")  
         result = {
             "id": event.get("id"),
             "type": event.get("type", "unknown").upper(),
@@ -28,5 +28,5 @@ class EventProcessor:
         return result
 
     def get_count(self) -> int:
-        logger.debug(f"Total processed: {len(self.processed)}")  # ← додали
+        logger.debug(f"Total processed: {len(self.processed)}") 
         return len(self.processed)
