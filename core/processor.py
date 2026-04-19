@@ -5,9 +5,13 @@ class EventProcessor:
     def process(self, event: dict) -> dict:
         if not isinstance(event, dict):
             raise TypeError("Event must be a dict")
+
+        if event.get("id") is None:
+            raise ValueError("Event must have an 'id' field")
+
         result = {
             "id": event.get("id"),
-            "type": event.get("type"),
+            "type": event.get("type", "unknown").upper(),
             "status": "processed",
         }
         self.processed.append(result)
