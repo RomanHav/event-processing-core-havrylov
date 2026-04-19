@@ -21,7 +21,7 @@ class EventProcessor:
         result = {
             "id": event.get("id"),
             "type": event.get("type", "unknown").upper(),
-            "status": "processed",
+            "status": "completed",
         }
         self.processed.append(result)
         logger.info(f"Event processed: {result}")
