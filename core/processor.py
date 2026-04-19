@@ -1,3 +1,8 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 class EventProcessor:
     def __init__(self):
         self.processed = []
