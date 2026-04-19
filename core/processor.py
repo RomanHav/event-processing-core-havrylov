@@ -7,7 +7,7 @@ class EventProcessor:
             raise TypeError("Event must be a dict")
         result = {
             "id": event.get("id"),
-            "type": event.get("type", "unknown").upper(),
+            "type": event.get("type"),
             "status": "processed",
         }
         self.processed.append(result)
