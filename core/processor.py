@@ -3,9 +3,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 class EventProcessor:
-    def __init__(self):
+    def __init__(self, log_level=logging.INFO):  
         self.processed = []
-
+        logging.basicConfig(                     
+            level=log_level,
+            format="%(asctime)s [%(levelname)s] %(message)s"
+        )
     def process(self, event: dict) -> dict:
         if not isinstance(event, dict):
             raise TypeError("Event must be a dict")
