@@ -1,5 +1,6 @@
 import json
 
+
 def load_event(raw: str) -> dict:
     """Parse raw JSON string into event dict."""
     try:
