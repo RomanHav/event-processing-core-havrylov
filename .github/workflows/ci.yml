@@ -27,4 +27,6 @@ jobs:
         run: bandit -r core/ input/ validation/ -ll
 
       - name: Run unit tests
+        env:
+          PYTHONPATH: .
         run: pytest tests/ -v
