@@ -1,0 +1,144 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+
+  # ── STAGE 1: TEST ─────────────────────────────────────────────────
+  test:
+    name: "Stage 1: Test"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install pytest flake8 bandit
+
+      - name: Lint (flake8)
+        run: flake8 . --max-line-length=100 --exclude=.git,__pycache__ --ignore=W292
+
+      - name: Security scan (bandit)
+        run: bandit -r core/ input/ validation/ -ll
+
+      - name: Run unit tests
+        run: pytest tests/ -v
+
+  # ── STAGE 2: BUILD ────────────────────────────────────────────────
+  build:
+    name: "Stage 2: Build"
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create build artifact
+        run: |
+          mkdir -p dist
+          echo "Build version: 1.0.0" > dist/build_info.txt
+          echo "Commit: ${{ github.sha }}" >> dist/build_info.txt
+          echo "Branch: ${{ github.ref_name }}" >> dist/build_info.txt
+          echo "Built at: $(date)" >> dist/build_info.txt
+          zip -r dist/app.zip core/ input/ validation/ main.py
+          echo "Build complete!"
+          cat dist/build_info.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-artifact
+          path: dist/
+
+  # ── STAGE 3: DEPLOY STAGING ───────────────────────────────────────
+  deploy_staging:
+    name: "Stage 3: Deploy to Staging"
+    runs-on: ubuntu-latest
+    needs: build
+    environment: staging
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-artifact
+          path: dist/
+
+      - name: Deploy to staging
+        run: |
+          echo "Deploying to STAGING environment..."
+          echo "Artifact contents:"
+          cat dist/build_info.txt
+          echo ""
+          echo "Unzipping application..."
+          unzip -l dist/app.zip
+          echo ""
+          echo "Deploy to staging complete!"
+
+  # ── STAGE 4: VERIFY STAGING ───────────────────────────────────────
+  verify_staging:
+    name: "Stage 4: Verify Staging"
+    runs-on: ubuntu-latest
+    needs: deploy_staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run smoke tests
+        run: |
+          python -c "
+          print('Running smoke tests on staging...')
+
+          # Smoke test 1: базова перевірка
+          assert 1 == 1, 'Basic sanity check failed'
+          print('PASS: Sanity check')
+
+          # Smoke test 2: імпорт модулів
+          import sys
+          sys.path.insert(0, '.')
+          from core.processor import EventProcessor
+          print('PASS: Core module import')
+
+          # Smoke test 3: базова функціональність
+          p = EventProcessor()
+          result = p.process({'id': '1', 'type': 'smoke'})
+          assert result['status'] == 'completed', 'Status check failed'
+          print('PASS: Core functionality')
+
+          print('')
+          print('All smoke tests passed! Staging is healthy.')
+          "
+
+  # ── STAGE 5: DEPLOY PRODUCTION ────────────────────────────────────
+  deploy_production:
+    name: "Stage 5: Deploy to Production"
+    runs-on: ubuntu-latest
+    needs: verify_staging
+    environment: production
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-artifact
+          path: dist/
+
+      - name: Deploy to production
+        run: |
+          echo "Deploying to PRODUCTION environment..."
+          echo "Artifact contents:"
+          cat dist/build_info.txt
+          echo ""
+          echo "Unzipping application..."
+          unzip -l dist/app.zip
+          echo ""
+          echo "PRODUCTION deploy complete!"
