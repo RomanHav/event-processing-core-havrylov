@@ -112,7 +112,7 @@ jobs:
           # Smoke test 3: базова функціональність
           p = EventProcessor()
           result = p.process({'id': '1', 'type': 'smoke'})
-          assert result['status'] == 'wrong', 'Status check failed'
+          assert result['status'] == 'completed', 'Status check failed'
           print('PASS: Core functionality')
 
           print('')
