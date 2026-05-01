@@ -9,7 +9,7 @@ from input.handler import load_event
 def test_process_valid_event():
     processor = EventProcessor()
     result = processor.process({"id": "1", "type": "click"})
-    assert result["status"] == "wrong"
+    assert result["status"] == "completed"
     assert result["type"] == "CLICK"
     assert result["id"] == "1"
 
